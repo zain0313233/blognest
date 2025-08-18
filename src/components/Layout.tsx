@@ -127,7 +127,7 @@ export default function Layout({ children }: LayoutProps) {
               ) : (
                 <div className="flex items-center space-x-3">
                   <Link
-                    href="/auth/register"
+                    href="/auth/login"
                     className="text-gray-600 hover:text-blue-600 font-medium px-4 py-2 rounded-lg hover:bg-blue-50 transition-all duration-200"
                   >
                     Sign Up
