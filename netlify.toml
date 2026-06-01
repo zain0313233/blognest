@@ -1,4 +1,5 @@
 [build]
+  # prisma generate runs via postinstall + build script; needs DATABASE_URL in Netlify env
   command = "npm run build"
   publish = ".next"
 
