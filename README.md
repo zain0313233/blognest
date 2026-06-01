@@ -1,112 +1,219 @@
-🚀 BlogNest
+# BlogNest
 
-A complete blog posting and reading web app built with Next.js and Supabase
+A full-stack AI-powered blog platform built with **Next.js 15**, **Neon PostgreSQL**, **Prisma**, **NextAuth.js**, and **Groq**. Read world-affairs stories, write with an AI assistant, and subscribe to a real SMTP newsletter.
 
-📌 Features
+![Next.js](https://img.shields.io/badge/Next.js-15-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![Prisma](https://img.shields.io/badge/Prisma-7-2D3748)
+![Groq](https://img.shields.io/badge/Groq-AI-orange)
 
-🔐 User authentication (Signup/Login with Supabase Auth)
+---
 
-📝 Create and manage blog posts
+## Features
 
-📖 Read blogs posted by others
+### Core blog
 
-👤 User profiles
+- **Home feed** — Hero featured post, category filters, paginated grid, trending sidebar
+- **Post detail** — Cover images, author card, tags, related posts, reading stats
+- **Create post** — Rich editor with categories, tags, cover image URL, live preview
+- **Auth** — Email/password signup & login with **NextAuth.js** (JWT sessions)
+- **Protected routes** — `/create-post` requires sign-in
+- **Seeded content** — 20+ sample articles on technology, politics, science, climate, and more
 
-🛡️ Protected routes (only logged-in users can create posts)
+### AI (Groq — Llama 3)
 
-⚙️ Tech Stack
+| Feature | Where | Description |
+|--------|--------|-------------|
+| **TL;DR Summarizer** | Post page | 5-bullet AI summary of any article |
+| **Natural language search** | Home | Search posts by meaning, not just keywords |
+| **Personalized “For You” feed** | Home sidebar | Recommendations from reading history (localStorage) |
+| **Full article generator** | Create post | Topic + tone + length → draft with title, body, excerpt, tags |
+| **Title suggestions** | Create post | 5 headline alternatives |
+| **Auto excerpt** | Create post | Compelling summary for post cards |
+| **Auto tag suggestions** | Create post | SEO-friendly tags in one click |
+| **Continue writing** | Create post | AI continues from your last paragraphs |
+| **Grammar & tone check** | Create post | Score, issues, strengths |
+| **Rewrite in tone** | Create post | Professional, casual, academic, persuasive, simple, bold |
+| **SEO analyzer** | Create post | Score, grade, keywords, recommendations |
+| **Semantic related posts** | Post page | Category-based related articles |
 
-Next.js 14
+### Newsletter
 
-Supabase (Auth + Database)
+- **Subscribe** on home (hero + sidebar), footer, and post sidebar
+- Saves subscribers to **Neon** via Prisma
+- Sends a **welcome email** through your **SMTP** provider
 
-TypeScript
+### Security
 
-TailwindCSS
+- **API auth** — Post creation and editor AI routes require login
+- **Rate limiting** — Per-IP limits on register, newsletter, AI, and read APIs
+- **CORS** — `/api` routes only allow your app origin (`NEXTAUTH_URL` + localhost in dev)
 
-🛠️ Setup Instructions
-1. Clone the repo
+---
+
+## Tech stack
+
+| Layer | Technology |
+|--------|------------|
+| Framework | [Next.js 15](https://nextjs.org) (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 |
+| Database | [Neon](https://neon.tech) PostgreSQL |
+| ORM | Prisma 7 |
+| Auth | NextAuth.js v5 (Credentials + Prisma adapter) |
+| AI | [Groq](https://groq.com) (`groq-sdk`) |
+| Email | Nodemailer (SMTP) |
+| Charts | Recharts |
+| Icons | Lucide React |
+| Forms | React Hook Form + Zod |
+
+---
+
+## Getting started
+
+### 1. Clone and install
+
+```bash
 git clone https://github.com/zain0313233/blognest.git
 cd blognest
-
-2. Install dependencies
 npm install
+```
 
-3. Create a Supabase project
+### 2. Environment variables
 
-Go to Supabase and create a new project.
+Create **`.env`** (Prisma CLI) and **`.env.local`** (Next.js):
 
-Get your project API URL and Anon key from:
+```env
+# Database (use Neon pooler URL for serverless deploys)
+DATABASE_URL="postgresql://USER:PASSWORD@HOST/blognest?sslmode=require"
 
-Project Settings → API → Project URL & Anon Key
+# NextAuth
+NEXTAUTH_SECRET="generate-a-long-random-string"
+NEXTAUTH_URL="http://localhost:3000"
 
-4. Set up environment variables
+# Groq AI
+GROQ_API_KEY="your_groq_api_key"
 
-Create a .env.local file in the root:
+# SMTP (newsletter welcome emails)
+SMTP_HOST="smtp.example.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="your_smtp_user"
+SMTP_PASS="your_smtp_password"
+SMTP_FROM_EMAIL="newsletter@yourdomain.com"
+SMTP_FROM_NAME="BlogNest"
+```
 
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+> **Production:** Set `NEXTAUTH_URL` to your live URL (e.g. `https://your-app.netlify.app`).
 
-🔗 Linking Supabase
-1. Database schema
+### 3. Database setup
 
-Run this SQL in your Supabase SQL editor to create the profiles table:
+```bash
+npx prisma generate
+npx prisma db push
+npm run db:seed
+```
 
-CREATE TABLE profiles (
-  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  display_name TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+### 4. Run locally
 
-2. Row Level Security (RLS)
-
-Enable RLS on the profiles table and add policies:
-
--- Allow logged in users to view their own profile
-create policy "Users can view own profile" 
-on profiles for select 
-using ( auth.uid() = id );
-
--- Allow logged in users to update their own profile
-create policy "Users can update own profile" 
-on profiles for update 
-using ( auth.uid() = id );
-
-🔑 How Authentication Works
-
-Users sign up/login with email + password.
-
-Supabase Auth manages sessions.
-
-On login/signup, a new row is automatically created in profiles.
-
-Protected routes use a custom wrapper (ProtectedRoute.tsx) to redirect unauthorized users.
-
-▶️ Run the app locally
+```bash
 npm run dev
+```
 
+Open [http://localhost:3000](http://localhost:3000).
 
-App will be available at: http://localhost:3000
+### 5. Build for production
 
-🌟 Bonus Feature (Optional)
+```bash
+npm run build
+npm start
+```
 
-✅ GraphQL Support – Apollo Client is integrated for querying posts.
-✅ Protected Routes – Only authenticated users can access /create-post.
+---
 
-📂 Folder Structure
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npm run db:seed` | Seed authors and sample posts |
+
+---
+
+## API overview
+
+| Route | Method | Access |
+|-------|--------|--------|
+| `/api/posts` | GET | Public (rate limited) |
+| `/api/posts` | POST | Authenticated |
+| `/api/posts/[id]` | GET | Public (rate limited) |
+| `/api/register` | POST | Public (rate limited) |
+| `/api/newsletter/subscribe` | POST | Public (rate limited) |
+| `/api/auth/[...nextauth]` | * | NextAuth handlers |
+| `/api/ai/summarize` | POST | Public (rate limited) |
+| `/api/ai/search` | POST | Public (rate limited) |
+| `/api/ai/*` (editor tools) | POST | **Authenticated** |
+
+---
+
+## Deployment
+
+Works on **Netlify**, **Vercel**, or any Node host that supports Next.js 15.
+
+1. Push to GitHub and connect the repo.
+2. Set all environment variables in the hosting dashboard.
+3. Use Neon **pooler** `DATABASE_URL` for serverless.
+4. Run `npx prisma db push` against production DB once (or use migrations).
+5. Redeploy after changing env vars.
+
+---
+
+## Project structure
+
+```
 src/
- ├── app/
- │   ├── auth/ (login, signup, callback)
- │   ├── create-post/ (new post form)
- │   ├── posts/[id]/ (single post page)
- │   └── middleware.ts (protected routes)
- ├── components/ (UI components)
- ├── contexts/ (Auth context)
- └── lib/ (supabase + apollo configs)
+├── app/
+│   ├── api/
+│   │   ├── ai/          # Groq-powered features
+│   │   ├── auth/        # NextAuth
+│   │   ├── newsletter/  # Subscribe + SMTP
+│   │   ├── posts/       # CRUD
+│   │   └── register/
+│   ├── auth/            # Login & signup pages
+│   ├── create-post/     # Editor + AI assistant
+│   ├── posts/[id]/      # Article + TL;DR
+│   └── page.tsx         # Home + search + feed
+├── components/
+│   ├── Layout.tsx
+│   ├── NewsletterForm.tsx
+│   └── ProtectedRoute.tsx
+├── lib/
+│   ├── prisma.ts
+│   ├── groq.ts
+│   ├── mail.ts
+│   ├── api-guard.ts     # Auth + rate limits
+│   ├── cors.ts
+│   └── rate-limit.ts
+├── auth.ts
+├── auth.config.ts
+└── middleware.ts        # CORS + /create-post guard
+prisma/
+├── schema.prisma
+└── seed.ts
+```
 
-👤 Author
+---
 
-Zain Aown
-GitHub: @zain0313233
+## Author
+
+**Zain Aown**  
+GitHub: [@zain0313233](https://github.com/zain0313233)
+
+---
+
+## License
+
+Private portfolio project. All rights reserved unless otherwise noted.
