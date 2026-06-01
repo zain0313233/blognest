@@ -87,9 +87,12 @@ Create **`.env`** (Prisma CLI) and **`.env.local`** (Next.js):
 # Database (use Neon pooler URL for serverless deploys)
 DATABASE_URL="postgresql://USER:PASSWORD@HOST/blognest?sslmode=require"
 
-# NextAuth
-NEXTAUTH_SECRET="generate-a-long-random-string"
+# NextAuth (Auth.js v5 — set both naming styles on Netlify)
+AUTH_SECRET="generate-a-long-random-string"
+AUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="same-as-AUTH_SECRET"
 NEXTAUTH_URL="http://localhost:3000"
+AUTH_TRUST_HOST="true"
 
 # Groq AI
 GROQ_API_KEY="your_groq_api_key"
@@ -104,7 +107,7 @@ SMTP_FROM_EMAIL="newsletter@yourdomain.com"
 SMTP_FROM_NAME="BlogNest"
 ```
 
-> **Production:** Set `NEXTAUTH_URL` to your live URL (e.g. `https://your-app.netlify.app`).
+> **Production (Netlify):** Set `NEXTAUTH_URL` and `AUTH_URL` to `https://blognestpk.netlify.app` (no trailing slash). Set `NEXTAUTH_SECRET` and `AUTH_SECRET` to the same random string. Add `AUTH_TRUST_HOST=true` or rely on `trustHost: true` in code (already enabled).
 
 ### 3. Database setup
 
