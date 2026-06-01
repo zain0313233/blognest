@@ -1,21 +1,24 @@
 'use client'
-import { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session } from '@supabase/supabase-js'
+import { createContext, useContext } from 'react'
+import { useSession, signOut as nextAuthSignOut } from 'next-auth/react'
 
-import { createClient } from '@/lib/supabase/client'
+interface AuthUser {
+  id: string
+  email?: string | null
+  name?: string | null
+  role?: string
+}
 
 interface AuthContextType {
-  user: User | null
-  session: Session | null
+  user: AuthUser | null
   loading: boolean
   signOut: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  session: null,
   loading: true,
-  signOut: async () => {}
+  signOut: async () => {},
 })
 
 export const useAuth = () => {
@@ -27,42 +30,29 @@ export const useAuth = () => {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  const { data: session, status } = useSession()
 
-  useEffect(() => {
-    const getSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession()
-      if (error) {
-        console.error('Error getting session:', error)
-      } else {
-        setSession(session)
-        setUser(session?.user ?? null)
+  const user: AuthUser | null = session?.user
+    ? {
+        id: session.user.id as string,
+        email: session.user.email,
+        name: session.user.name,
+        role: (session.user as { role?: string }).role ?? 'user',
       }
-      setLoading(false)
-    }
-
-    getSession()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [supabase.auth])
+    : null
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    await nextAuthSignOut({ callbackUrl: '/' })
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading: status === 'loading',
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

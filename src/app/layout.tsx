@@ -1,13 +1,13 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
+import { SessionProvider } from 'next-auth/react'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { ApolloWrapper } from '@/components/ApolloWrapper'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'My Blog',
-  description: 'A modern blog built with Next.js and Supabase',
+  title: 'BlogNest',
+  description: 'A modern blog platform built with Next.js, Prisma, and Neon',
 }
 
 export default function RootLayout({
@@ -18,11 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          <ApolloWrapper>
+        <SessionProvider>
+          <AuthProvider>
             {children}
-          </ApolloWrapper>
-        </AuthProvider>
+          </AuthProvider>
+        </SessionProvider>
       </body>
     </html>
   )
